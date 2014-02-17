@@ -1,0 +1,7 @@
+LINK="link"
+STATUS="status"
+TITLE="title"
+BODY="body"
+SIZE="size"
+LINKSTO="linkTo"
+VISITEDON="visitedOn"

@@ -7,6 +7,16 @@ DATABASE_PORT = ""				# Port number as a string. Not used with sqlite
 DATABASE_USER = ""				# Not used with sqlite
 DATABASE_PASS = ""				# Not used with sqlite
 
+ES_CLUSTER_NAME="esnew"
+ES_HOST_NAME="localhost"
+ES_PORT="9200"
+ES_INDEX_NAME="cl1"
+ES_TYPE_NAME_SEARCH="Search"
+ES_TYPE_NAME_CRAWLED="Crawled"
+ES_TYPE_NAME_SEARCH="search"
+
+
+
 DEBUG = True 					# Whether or not to show DEBUG level messages
 USE_COLORS = True 				# Whether or not colors should be used when outputting text
 

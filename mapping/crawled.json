@@ -1,0 +1,22 @@
+{
+	"Crawled":{
+		"properties":{
+			"link":{
+				"type":"string",
+				"fields":{
+					"raw":{
+						"type":"string",
+						"index":"not_analyzed"
+					},
+					"modified":{
+						"type":"string"
+					}
+				}
+			},
+			"addedOn":{
+				"type":"date",
+				"format":"dateOptionalTime"
+			}
+		}
+	}
+}

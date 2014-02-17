@@ -1,12 +1,13 @@
 from multiprocessing import Pool
 import re, sys, logging, string
+import stopwords
 
 from ready_queue import ready_queue
 
 logger = logging.getLogger("crawler_logger")
 
 def rankKeywords(text):
-	invalid_keywords = ['', ' ', "i", "a", "an", "and", "the", "for", "be", "to", "or", "too", "also"]
+	invalid_keywords = stopwords.invalid_keywords
 	ranks = {}
 	text = text.split(' ')
 	exclude = set(string.punctuation)
@@ -38,7 +39,7 @@ class ContentProcessor:
 	
 	def __init__(self, url, status, text):
 		self.keyword_dicts = []
-		self.invalid_keywords = ['', ' ', "i", "a", "an", "and", "the", "for", "be", "to", "or", "too", "also"]
+		self.invalid_keywords = stopwords.invalid_keywords
 		self.keywords = {}
 		self.text = text
 		self.size = 0
@@ -149,4 +150,5 @@ class ContentProcessor:
 		for k,v in self.keywords.items():
 			if v < 3:
 				del self.keywords[k]
-		return {"address":self.url, "title":self.title, "status":self.status, "size":self.size, "keywords":self.keywords}
+		return {"address":self.url, "title":self.title, "status":self.status, "size":self.size, "keywords":self.keywords,
+		"body":self.body}
