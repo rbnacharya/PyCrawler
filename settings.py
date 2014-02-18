@@ -1,4 +1,5 @@
 import logging
+import yaml
 
 DATABASE_ENGINE = "sqlite"		# sqlite or mysql
 DATABASE_NAME = "PyCrawler"		# Database name
@@ -7,13 +8,24 @@ DATABASE_PORT = ""				# Port number as a string. Not used with sqlite
 DATABASE_USER = ""				# Not used with sqlite
 DATABASE_PASS = ""				# Not used with sqlite
 
-ES_CLUSTER_NAME="esnew"
-ES_HOST_NAME="localhost"
-ES_PORT="9200"
-ES_INDEX_NAME="cl1"
-ES_TYPE_NAME_SEARCH="Search"
-ES_TYPE_NAME_CRAWLED="Crawled"
-ES_TYPE_NAME_SEARCH="search"
+CONFIG_FILE="../config/settings.yml"
+ES_CLUSTER_NAME=""
+ES_HOST_NAME=""
+ES_PORT=""
+ES_INDEX_NAME=""
+ES_TYPE_NAME_SEARCH=""
+ES_TYPE_NAME_CRAWLED=""
+
+def getSettings():
+	stream=open(CONFIG_FILE,"r")
+	docs=yaml.load(stream)
+	global ES_CLUSTER_NAME, ES_HOST_NAME,ES_PORT,ES_INDEX_NAME,ES_TYPE_NAME_SEARCH,ES_TYPE_NAME_CRAWLED
+	ES_CLUSTER_NAME=docs["cluster_name"]
+	ES_HOST_NAME=docs["host_name"]
+	ES_PORT=docs["http_port"]
+	ES_INDEX_NAME=docs["index_name_default"]
+	ES_TYPE_NAME_SEARCH=docs["type_name_search"]
+	ES_TYPE_NAME_CRAWLED=docs["type_name_crawler"]
 
 
 

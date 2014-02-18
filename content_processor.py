@@ -1,31 +1,13 @@
 from multiprocessing import Pool
 import re, sys, logging, string
-import stopwords
+import constants
+from datetime import date
 
 from ready_queue import ready_queue
 
 logger = logging.getLogger("crawler_logger")
 
-def rankKeywords(text):
-	invalid_keywords = stopwords.invalid_keywords
-	ranks = {}
-	text = text.split(' ')
-	exclude = set(string.punctuation)
-	for t in text:
-		#remove punctuation if attached to word
-		temp = t
-		t = ''
-		for i in range(len(temp)):
-			if(temp[i] not in exclude):
-				t += temp[i]
-		t = t.strip()
-		if t in invalid_keywords:
-			continue
-		if not ranks.has_key(t):
-			ranks[t] = 1
-		else:
-			ranks[t] += 1 
-	return ranks
+
 
 def stripPunctuation(text):
 	pattern = re.compile(r'[^\w\s]')
@@ -38,9 +20,7 @@ def stripScript(text):
 class ContentProcessor:
 	
 	def __init__(self, url, status, text):
-		self.keyword_dicts = []
-		self.invalid_keywords = stopwords.invalid_keywords
-		self.keywords = {}
+		self.links = {}
 		self.text = text
 		self.size = 0
 		self.url = url
@@ -63,8 +43,7 @@ class ContentProcessor:
 		self.size = len(text)
 
 	def reset(self):
-		self.keyword_dicts = []
-		self.keywords = {}
+		self.links = {}
 		self.text = None
 		self.head = None
 		self.body = None
@@ -72,59 +51,8 @@ class ContentProcessor:
 		self.size = 0
 		self.status = None
 
-	def combineKeywordLists(self):
-		if len(self.keyword_dicts) == 1:
-			self.keywords = self.keyword_dicts[0]
-			return
-		for l in self.keyword_dicts:
-			for k,v in l.items():
-				if self.keywords.has_key(k):
-					self.keywords[k] += v
-				else:
-					self.keywords[k] = v
 	
-	# returns links to queue	
-	def processBody(self):
-		queue = ready_queue(self.url, self.body)
-		#print "found %i links to queue" % len(queue)
-		self.text = stripPunctuation(self.remove_html_tags(stripScript(self.body)))
-		if len(self.text) > 5000:
-			offset = 0
-			i = 0
-			l = []
-			cont = True
-			while cont:
-				#this divides the text into sets of 500 words
-				#set j to the index of the last letter of the 500th word
-				j = self.findnth(self.text[i:],' ',500)
-				#if only 500 words or less are left
-				if j == -1:
-					cont = False
-				#Should append a string that contains 500 words for each loop(except the last loop) to l
-				#last loop should append a string with 500 words or less to l
-				l.append(self.text[i:i+j])
-				i += j+1
-			logger.debug("processing with %i threads" % len(l))
-			try:
-				if len(l) == 0:
-					return []
-				pool = Pool(processes=(len(l)))
-				self.keyword_dicts = pool.map(rankKeywords, l)
-			except KeyboardInterrupt:
-				pool.terminate()
-				pool.join()
-				sys.exit()
-			else:
-				pool.close()
-				pool.join()
-			logger.debug("processed, returned %i dicts" % len(self.keyword_dicts))
-		else:
-			self.keyword_dicts.append(rankKeywords(self.text))
-		return queue
-		
-	def processHead(self):
-		pass
-
+	
 	def remove_html_tags(self, data):
 		p = re.compile(r'<.*?>')
 		return p.sub('', data)
@@ -140,15 +68,16 @@ class ContentProcessor:
 		text_lower = self.text.lower()
 		self.title = self.text[text_lower.find('<title')+6:text_lower.find('</title>')]
 		self.head = self.text[text_lower.find('<head')+5:text_lower.find('</head>')]
-		self.processHead()
 		self.body = self.text[text_lower.find('<body'):text_lower.find('</body>')]
-		queue = self.processBody()
-		self.combineKeywordLists()
-		return queue
+		self.text = stripPunctuation(self.remove_html_tags(stripScript(self.body)))
 
+		self.links=ready_queue(self.url, self.body)
+		return self.links
+
+	
 	def getDataDict(self):
-		for k,v in self.keywords.items():
-			if v < 3:
-				del self.keywords[k]
-		return {"address":self.url, "title":self.title, "status":self.status, "size":self.size, "keywords":self.keywords,
-		"body":self.body}
+		todayDate=date.today()
+		return {constants.LINK:self.url,constants.STATUS:self.status,constants.TITLE:self.title,
+		constants.BODY:self.text,constants.SIZE:self.size,constants.LINKSTO:self.links,
+		constants.VISITEDON :todayDate}
+	

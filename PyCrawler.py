@@ -1,6 +1,8 @@
 #from query import CrawlerDb
 from content_processor import ContentProcessor
 from settings import LOGGING
+import settings
+from esConnector import esConnect
 import sys, urlparse, urllib2, shutil, glob, robotparser
 import logging, logging.config
 import traceback
@@ -18,6 +20,9 @@ processor = ContentProcessor(None, None, None)
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("crawler_logger")
 
+#esInit
+esc=esConnect()
+
 # robot parser init
 robot = robotparser.RobotFileParser()
 
@@ -31,17 +36,20 @@ toCrawl=l[0];
 
 def crawl():
 	logger.info("Starting (%s)..." % sys.argv[1])
+	esc.connect()
 	while True:
 		url = toCrawl
 		u = urlparse.urlparse(url)
 		robot.set_url('http://'+u[1]+"/robots.txt")
 		if not robot.can_fetch('PyCrawler', url.encode('ascii', 'replace')):
 			logger.warning("Url disallowed by robots.txt: %s " % url)
-			continue
+			break
 		if not url.startswith('http'):
 			logger.warning("Unfollowable link found at %s " % url)
-			continue
-
+			break
+		
+		if esConnect.isCrawled(url):
+			break
 		# if cdb.checkCrawled(url):
 		# 	continue
 		if url is False:
@@ -64,24 +72,26 @@ def crawl():
 		processor.setInfo(str(url), status, data)
 		ret = processor.process()
 		if status != 200:
-			continue
-		add_queue = []
+			break
+		linkedTo = []
 		#toDo: check if it is already crawled
 		# for q in ret:
 		# 	if not cdb.checkCrawled(q):
 		# 		add_queue.append(q)
 
 		processor.setInfo(str(url), status, data)
-		add_queue = processor.process()
-		l = len(add_queue)
+		linkedTo = processor.process()
+		l = len(linkedTo)
 		logger.info("Got %s status from %s (Found %i links)" % (status, url, l))
+		esc.addPage(processor.getDataDict())
 		# if l > 0:
 		# 	cdb.enqueue(add_queue)	
 		# cdb.addPage(processor.getDataDict())
 		processor.reset()
+		break
 
 	logger.info("Finishing...")
-	cdb.close()
+	#cdb.close()
 	logger.info("Done! Goodbye!")
 
 if __name__ == "__main__":
