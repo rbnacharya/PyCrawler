@@ -3,9 +3,11 @@ from content_processor import ContentProcessor
 from settings import LOGGING
 import settings
 from esConnector import esConnect
+from http_request import RequestHTTP
 import sys, urlparse, urllib2, shutil, glob, robotparser
 import logging, logging.config
 import traceback
+import ready_queue
 
 # ===== Init stuff =====
 
@@ -15,7 +17,7 @@ import traceback
 
 # content processor init
 processor = ContentProcessor(None, None, None)
-
+http_req=RequestHTTP()
 # logging setup
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("crawler_logger")
@@ -35,45 +37,37 @@ toCrawl=l[0];
 #cdb.enqueue(l)
 
 def crawl():
+#	global http_req
 	logger.info("Starting (%s)..." % sys.argv[1])
 	esc.connect()
 	while True:
-		url = toCrawl
-		u = urlparse.urlparse(url)
-		robot.set_url('http://'+u[1]+"/robots.txt")
-		if not robot.can_fetch('PyCrawler', url.encode('ascii', 'replace')):
-			logger.warning("Url disallowed by robots.txt: %s " % url)
+		url = ready_queue.stripURL(toCrawl)
+		http_req.setURL(url)
+		if not http_req.can_fetch():
 			break
-		if not url.startswith('http'):
-			logger.warning("Unfollowable link found at %s " % url)
+		if not http_req.can_follow():
 			break
-		
-		if esConnect.isCrawled(url):
-			break
-		# if cdb.checkCrawled(url):
+				
+		# if esConnect.isCrawled(url):
+		# 	break
+		# # if cdb.checkCrawled(url):
 		# 	continue
 		if url is False:
 			break
-		status = 0
-		req = urllib2.Request(str(url))
-		req.add_header('User-Agent', 'PyCrawler 0.2.0')
-		request = None
+		status=0
+		#print http_req.request("heee")
+		http_req.request()
+		status = http_req.get_status()
+		if status != 200:
+			break
+		data = http_req.get_data()
 
-		try:
-			request = urllib2.urlopen(req)
-		except urllib2.URLError,e:
-			logger.error("Exception at url: %s\n%s" % (url, e))
-			continue
-		except urllib2.HTTPError, e:
-			status = e.code
-		if status == 0:
-			status = 200
-		data = request.read()
 		processor.setInfo(str(url), status, data)
 		ret = processor.process()
 		if status != 200:
 			break
 		linkedTo = []
+		
 		#toDo: check if it is already crawled
 		# for q in ret:
 		# 	if not cdb.checkCrawled(q):
@@ -82,7 +76,7 @@ def crawl():
 		processor.setInfo(str(url), status, data)
 		linkedTo = processor.process()
 		l = len(linkedTo)
-		logger.info("Got %s status from %s (Found %i links)" % (status, url, l))
+		#logger.info("Got %s status from %s (Found %i links)" % (status, url, l))
 		esc.addPage(processor.getDataDict())
 		# if l > 0:
 		# 	cdb.enqueue(add_queue)	

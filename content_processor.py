@@ -66,7 +66,9 @@ class ContentProcessor:
 	# returns the queue from processBody
 	def process(self):
 		text_lower = self.text.lower()
-		self.title = self.text[text_lower.find('<title')+6:text_lower.find('</title>')]
+		temptitle = self.text[text_lower.find('<title')+6:text_lower.find('</title>')]
+		self.title = temptitle[temptitle.find('>'):len(temptitle)]
+
 		self.head = self.text[text_lower.find('<head')+5:text_lower.find('</head>')]
 		self.body = self.text[text_lower.find('<body'):text_lower.find('</body>')]
 		self.text = stripPunctuation(self.remove_html_tags(stripScript(self.body)))

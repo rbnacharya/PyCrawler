@@ -1,0 +1,69 @@
+import logging
+
+DATABASE_ENGINE = "sqlite"		# sqlite or mysql
+DATABASE_NAME = "PyCrawler"		# Database name
+DATABASE_HOST = "/PyCrawler.db"	# Host address of mysql server or file location of sqlite db
+DATABASE_PORT = ""				# Port number as a string. Not used with sqlite
+DATABASE_USER = ""				# Not used with sqlite
+DATABASE_PASS = ""				# Not used with sqlite
+
+ES_CLUSTER_NAME="esnew"
+ES_HOST_NAME="localhost"
+ES_PORT="9200"
+<<<<<<< HEAD
+ES_INDEX_NAME="cl1"
+ES_TYPE_NAME_SEARCH="Search"
+ES_TYPE_NAME_CRAWLED="Crawled"
+ES_TYPE_NAME_SEARCH="search"
+=======
+INDEX_NAME="cl1"
+TYPE_NAME="search"
+>>>>>>> 028b09539cdd0aa04d030c7410c70cc92de818d6
+
+
+
+DEBUG = True 					# Whether or not to show DEBUG level messages
+USE_COLORS = True 				# Whether or not colors should be used when outputting text
+
+LOGGING = {						# dictConfig for output stream and file logging
+	'version': 1,              
+    'disable_existing_loggers': False,
+
+	'formatters': {
+		'console': {
+			'format': '[%(asctime)s] %(levelname)s::%(module)s - %(message)s',
+		},
+		'file': {
+			'format': '[%(asctime)s] %(levelname)s::(P:%(process)d T:%(thread)d)::%(module)s - %(message)s',
+		},
+	},
+
+	'handlers': {
+		'console': {
+			'class': 'ColorStreamHandler.ColorStreamHandler',
+			'formatter':'console',
+			'level': 'DEBUG',
+			'use_colors': USE_COLORS,
+		},
+		'file': {
+			'class': 'logging.handlers.TimedRotatingFileHandler',
+			'formatter':'file',
+			'level': 'INFO',
+			'when': 'midnight',
+			'filename': 'pycrawler.log',
+			'interval': 1,
+			'backupCount': 0,
+			'encoding': None,
+			'delay': False,
+			'utc': False,
+		},
+	},
+
+	'loggers': {
+		'crawler_logger': {
+			'handlers': ['console', 'file'],
+			'level': 'DEBUG' if DEBUG else 'INFO',
+			'propagate': True,
+		},
+	}
+}   

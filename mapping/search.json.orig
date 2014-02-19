@@ -19,14 +19,13 @@
 			},
 			"title":{
 				"type":"string"
-			},"title_suggest":{
-                "type":"completion"
-            }
+			}
 			,"body":{
 				"type":"string"
 			},
 			"size":{
 				"type":"float"
+<<<<<<< HEAD
 			},
 			"linkTo":{
 				"type":"string",
@@ -35,6 +34,8 @@
 			"addedOn":{
 				"type":"date",
 				"format":"dateOptionalTime"
+=======
+>>>>>>> 028b09539cdd0aa04d030c7410c70cc92de818d6
 			}
 		}
 	}

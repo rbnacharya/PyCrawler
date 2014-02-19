@@ -24,7 +24,7 @@ class esConnect:
 	def addPage(self,data):
 		datae={'link':data[constants.LINK],'status':data[constants.STATUS],'title':data[constants.TITLE],
 		'body':data[constants.BODY],'size':data[constants.SIZE],'linkTo':data[constants.LINKSTO],
-		"addedOn":data[constants.VISITEDON]}
+		"addedOn":data[constants.VISITEDON],'title_suggest':data[constants.TITLE]}
 		self.addVisited(datae)
 		self.write_data(datae,settings.ES_TYPE_NAME_SEARCH)
 		# write data to es
@@ -32,6 +32,9 @@ class esConnect:
 		
 	def write_data(self,data,type):
 		self.es.index(index=settings.ES_INDEX_NAME,doc_type=type,body=data)
+
+	def getNotAnalyzed():
+		pass
 
 	
 		
